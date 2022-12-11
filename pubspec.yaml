@@ -42,6 +42,7 @@ dependencies:
   url_launcher: ^6.0.9
   font_awesome_flutter: ^10.2.1
   intl_phone_number_input: ^0.7.1
+  dropdown_search: ^5.0.5
 
 
 dev_dependencies:

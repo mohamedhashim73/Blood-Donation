@@ -124,11 +124,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
             icon: Icons.add,
             destination: AddNewsItem.route,
           ),
+         /*
          _DrawerTile(
           title: 'News and Tips',
           icon: FontAwesomeIcons.bell,
           destination: NewsScreen.route,
         ),
+          */
          _DrawerTile(
           title: 'Can I donate blood?',
           icon: FontAwesomeIcons.circleQuestion,

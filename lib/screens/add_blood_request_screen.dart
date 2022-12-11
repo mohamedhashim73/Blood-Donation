@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-
+import 'package:dropdown_search/dropdown_search.dart';
+import '../data/lists/blood_banks.dart';
 import '../data/medical_center.dart';
 import '../utils/blood_types.dart';
 import '../utils/tools.dart';
@@ -83,6 +84,7 @@ class _AddBloodRequestScreenState extends State<AddBloodRequestScreen> {
   }
 
   void _submit()  {
+    debugPrint(_medicalCenter!.name);
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
@@ -106,7 +108,7 @@ class _AddBloodRequestScreenState extends State<AddBloodRequestScreen> {
         });
         // await _resetFields();
       } catch (e) {
-        Fluttertoast.showToast(msg: 'Something went wrong. Please try again');
+        Fluttertoast.showToast(msg: 'Something went wrong. Please try again and the error is $e');
         setState(() => _isLoading = false);
       }
     }
@@ -190,32 +192,40 @@ class _AddBloodRequestScreenState extends State<AddBloodRequestScreen> {
             .toList(),
       );
 
-  Widget _medicalCenterSelector() => GestureDetector(
-        onTap: () async {
-          final picked = await showModalBottomSheet<MedicalCenter>(
-            context: context,
-            builder: (_) => const MedicalCenterPicker(),
-            isScrollControlled: true,
-          );
-          if (picked != null)
-          {
-            setState(() => _medicalCenter = picked);
-          }
-        },
-        child: AbsorbPointer(
-          child: TextFormField(
-            key: ValueKey<String>(_medicalCenter?.name ?? 'none'),
-            initialValue: _medicalCenter?.name,
-            validator: (_) => _medicalCenter == null
-                ? '* Please select a medical center'
-                : null,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Medical Center',
-            ),
-          ),
-        ),
-      );
+  Widget _medicalCenterSelector()=> DropdownSearch<String>(
+    popupProps: PopupProps.menu(
+      showSelectedItems: true,
+      disabledItemFn: (String s) => s.startsWith('I'),
+    ),
+    items: bloodBanks.map((item) => item.name).toList(),
+    dropdownDecoratorProps: const DropDownDecoratorProps(
+      dropdownSearchDecoration: InputDecoration(
+        labelText: "Menu mode",
+        hintText: "country in menu mode",
+        border: OutlineInputBorder()
+      ),
+    ),
+    onChanged: (val) async
+    {
+      await loopOnBloodBankToGetIndexForSelectedBank(val.toString());        // this method to loop on bloodBanks to get the index which user chosen to send medicalCenter model to fireStore with requested
+    },
+    selectedItem: bloodBanks.first.name,
+  );
+
+  // this method to loop on bloodBanks to get the index which user chosen to send medicalCenter model to fireStore with requested
+  Future<void> loopOnBloodBankToGetIndexForSelectedBank(String val) async {
+    for( int i=0; i < bloodBanks.length ; i++ )
+    {
+      if( bloodBanks[i].name == val )
+      {
+        setState(()
+        {
+          _medicalCenter = bloodBanks[i];
+          print("the bank is .... $val");
+        });
+      }
+    }
+  }
 
   Widget _requestDatePicker() => GestureDetector(
         onTap: () async {
@@ -246,3 +256,33 @@ class _AddBloodRequestScreenState extends State<AddBloodRequestScreen> {
       );
 
 }
+
+// this for choosing from multi choices like hospitals or banks and so on
+/*
+Widget medicalCenterSelector() => GestureDetector(
+        onTap: () async {
+          final picked = await showModalBottomSheet<MedicalCenter>(
+            context: context,
+            builder: (_) => const MedicalCenterPicker(),
+            isScrollControlled: true,
+          );
+          if (picked != null)
+          {
+            setState(() => _medicalCenter = picked);
+          }
+        },
+        child: AbsorbPointer(
+          child: TextFormField(
+            key: ValueKey<String>(_medicalCenter?.name ?? 'none'),
+            initialValue: _medicalCenter?.name,
+            validator: (_) => _medicalCenter == null
+                ? '* Please select a medical center'
+                : null,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Medical Center',
+            ),
+          ),
+        ),
+      );
+ */
